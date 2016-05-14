@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Hello MUI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+		<!--标准mui.css-->
+		<link rel="stylesheet" href="../css/mui.min.css">
+		<!--App自定义的css-->
+		<link rel="stylesheet" type="text/css" href="../css/app.css"/>
+		<style type="text/css">
+			.mui-media-object{max-width: 100px!important;height: 100px!important;}
+		</style>
+		<style>
+			.title {
+				margin: 20px 15px 10px;
+				color: #6d6d72;
+				font-size: 15px;
+			}
+		</style>
+	</head>
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">相册</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view" id="ul_album">
+				
+			</ul>
+			</div>
+		</div>
+	</body>
+	<script src="../js/mui.min.js"></script>
+	<script>
+		(function($) {
+			 mui.init({
+				swipeBack:true //启用右滑关闭功能
+			});
+			var network = true;
+			if(mui.os.plus){
+				mui.plusReady(function () {
+					if(plus.networkinfo.getCurrentType()==plus.networkinfo.CONNECTION_NONE){
+						network = false;
+					}
+				});
+			}
+			//成功响应的回调函数
+			var success = function(response) {
+				var ret = eval(JSON.stringify(response));
+				var liList = "";
+				for(var i = 0; i < ret.length; i++) {  
+				     var item = ret[i];
+				     liList +=
+				     '<li onclick=\'goPhotoList('+item.id+')\' class="mui-table-view-cell mui-media">'+
+						'<a href="javascript:;">'+
+							'<img class="mui-media-object mui-pull-left" width="200" height="200"  src="'+item.profile+'">'+
+							'<div class="mui-media-body">'+
+								item.name+
+								'<p class=\'mui-ellipsis\'>'+item.remark+'</p>'+
+								'<p class=\'mui-ellipsis\'>'+item.creTime+'</p>'+
+							'</div>'+
+						'</a>'+
+					'</li>';
+				 }  
+				 document.querySelector("#ul_album").innerHTML = liList;
+			};
+			
+			//设置全局beforeSend
+			$.ajaxSettings.beforeSend = function(xhr, setting) {
+				//beforeSend演示,也可在$.ajax({beforeSend:function(){}})中设置单个Ajax的beforeSend
+				console.log('beforeSend:::' + JSON.stringify(setting));
+			};
+			//设置全局complete
+			$.ajaxSettings.complete = function(xhr, status) {
+				console.log('complete:::' + status);
+			}
+			var ajax = function() {
+				//利用RunJS的Echo Ajax功能测试
+				var url = 'http://123.206.89.59:8801/life/album/front/album/list';
+				//请求方式，默认为Get；
+				var type = "get";
+				//预期服务器范围的数据类型
+				var dataType = "json";
+				//发送数据
+				var data = {
+	
+				};
+				if (type === 'get') {
+					if (dataType === 'json') {
+						$.getJSON(url, data, success);
+					} else {
+						$.get(url, data, success, dataType);
+					}
+				} else if (type === 'post') {
+					$.post(url, data, success, dataType);
+				}
+			};
+			ajax();
+		})(mui);
+		
+		function goPhotoList(id){
+			mui.openWindow({
+			    url:'album_photo.html',
+			    id:'album_photo',
+			    extras:{
+			        "groupid":id
+			    }
+			});
+		}
+	</script>
+</html>
